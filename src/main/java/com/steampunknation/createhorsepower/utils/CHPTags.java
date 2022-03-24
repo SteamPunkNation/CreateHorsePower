@@ -8,9 +8,11 @@ import net.minecraftforge.common.Tags;
 public class CHPTags {
     public static class Entities {
 
-        public static final Tags.IOptionalNamedTag<EntityType<?>> WORKER_ENTITIES = tag("worker");
+        public static final Tags.IOptionalNamedTag<EntityType<?>> SMALL_WORKER = tag("worker_small");
+        public static final Tags.IOptionalNamedTag<EntityType<?>> MEDIUM_WORKER = tag("worker_medium");
+        public static final Tags.IOptionalNamedTag<EntityType<?>> LARGE_WORKER = tag("worker_large");
 
-        private static Tags.IOptionalNamedTag<EntityType<?>> tag(String name){
+        private static Tags.IOptionalNamedTag<EntityType<?>> tag(String name) {
             return EntityTypeTags.createOptional(new ResourceLocation("createhorsepower:" + name));
         }
     }

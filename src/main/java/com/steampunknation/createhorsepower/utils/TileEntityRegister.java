@@ -1,6 +1,7 @@
-package com.steampunknation.createhorsepower;
+package com.steampunknation.createhorsepower.utils;
 
 import com.simibubi.create.repack.registrate.util.entry.TileEntityEntry;
+import com.steampunknation.createhorsepower.CreateHorsePower;
 import com.steampunknation.createhorsepower.blocks.horse_crank.HorseCrankCogInstance;
 import com.steampunknation.createhorsepower.blocks.horse_crank.HorseCrankRenderer;
 import com.steampunknation.createhorsepower.blocks.horse_crank.HorseCrankTileEntity;

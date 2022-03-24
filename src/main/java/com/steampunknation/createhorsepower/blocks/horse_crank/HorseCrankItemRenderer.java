@@ -1,7 +1,7 @@
 package com.steampunknation.createhorsepower.blocks.horse_crank;
 
-import com.steampunknation.createhorsepower.BlockRegister;
-import com.steampunknation.createhorsepower.CHPBlockPartials;
+import com.steampunknation.createhorsepower.utils.BlockRegister;
+import com.steampunknation.createhorsepower.utils.CHPBlockPartials;
 import com.mojang.blaze3d.matrix.MatrixStack;
 import com.mojang.blaze3d.vertex.IVertexBuilder;
 import com.simibubi.create.foundation.render.PartialBufferer;

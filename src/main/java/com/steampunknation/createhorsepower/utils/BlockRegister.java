@@ -1,9 +1,10 @@
-package com.steampunknation.createhorsepower;
+package com.steampunknation.createhorsepower.utils;
 
 import com.simibubi.create.AllTags;
 import com.simibubi.create.foundation.data.CreateRegistrate;
 import com.simibubi.create.foundation.data.SharedProperties;
 import com.simibubi.create.repack.registrate.util.entry.BlockEntry;
+import com.steampunknation.createhorsepower.CreateHorsePower;
 import com.steampunknation.createhorsepower.blocks.horse_crank.HorseCrankBlock;
 import net.minecraft.item.ItemGroup;
 

@@ -1,4 +1,4 @@
-package com.steampunknation.createhorsepower;
+package com.steampunknation.createhorsepower.utils;
 
 import static net.minecraft.util.Direction.UP;
 import java.util.function.BiFunction;
@@ -17,7 +17,8 @@ public class CHPShapes {
 
     public static final VoxelShape HORSE_CRANK = Stream.of(
             Block.box(0, 0, 0, 16, 6, 16),
-            Block.box(2, 6, 2, 14, 13, 14)
+            Block.box(2, 6, 2, 14, 13, 14),
+            Block.box(6, 12, 6, 10, 20, 10)
     ).reduce((v1, v2) -> VoxelShapes.join(v1, v2, IBooleanFunction.OR)).get();
 
     // From create:AllShapes

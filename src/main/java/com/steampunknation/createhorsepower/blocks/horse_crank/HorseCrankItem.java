@@ -1,6 +1,6 @@
 package com.steampunknation.createhorsepower.blocks.horse_crank;
 
-import com.steampunknation.createhorsepower.BlockRegister;
+import com.steampunknation.createhorsepower.utils.BlockRegister;
 import net.minecraft.block.BlockState;
 import net.minecraft.client.renderer.tileentity.ItemStackTileEntityRenderer;
 import net.minecraft.item.BlockItem;

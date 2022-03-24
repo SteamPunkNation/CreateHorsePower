@@ -5,7 +5,7 @@ import com.jozufozu.flywheel.backend.material.MaterialManager;
 import com.simibubi.create.content.contraptions.base.KineticTileEntity;
 import com.simibubi.create.content.contraptions.base.RotatingData;
 import com.simibubi.create.content.contraptions.base.SingleRotatingInstance;
-import com.steampunknation.createhorsepower.CHPBlockPartials;
+import com.steampunknation.createhorsepower.utils.CHPBlockPartials;
 
 public class HorseCrankCogInstance extends SingleRotatingInstance {
 
