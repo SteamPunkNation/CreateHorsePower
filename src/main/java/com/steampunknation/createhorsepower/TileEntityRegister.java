@@ -1,6 +1,5 @@
 package com.steampunknation.createhorsepower;
 
-import com.simibubi.create.content.contraptions.base.HalfShaftInstance;
 import com.simibubi.create.repack.registrate.util.entry.TileEntityEntry;
 import com.steampunknation.createhorsepower.blocks.horse_crank.HorseCrankCogInstance;
 import com.steampunknation.createhorsepower.blocks.horse_crank.HorseCrankRenderer;

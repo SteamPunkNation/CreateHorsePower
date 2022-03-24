@@ -1,18 +1,13 @@
 package com.steampunknation.createhorsepower;
 
 import com.simibubi.create.foundation.data.CreateRegistrate;
-import com.simibubi.create.repack.registrate.providers.ProviderType;
 import com.simibubi.create.repack.registrate.util.NonNullLazyValue;
-import com.steampunknation.createhorsepower.utils.CHPTags;
-import com.steampunknation.createhorsepower.utils.CHPUtils;
-import net.minecraft.entity.EntityType;
 import net.minecraft.util.ResourceLocation;
 import net.minecraftforge.api.distmarker.Dist;
 import net.minecraftforge.common.MinecraftForge;
 import net.minecraftforge.eventbus.api.IEventBus;
 import net.minecraftforge.eventbus.api.SubscribeEvent;
 import net.minecraftforge.fml.DistExecutor;
-import net.minecraftforge.fml.event.lifecycle.GatherDataEvent;
 import net.minecraftforge.fml.common.Mod;
 import net.minecraftforge.fml.event.lifecycle.*;
 import net.minecraftforge.fml.event.server.FMLServerStartingEvent;
@@ -33,7 +28,6 @@ public class CreateHorsePower {
 
         BlockRegister.register();
         TileEntityRegister.register();
-        CHPUtils.register();
 
         //Registration Continue
         eventBus.addListener(this::setup);

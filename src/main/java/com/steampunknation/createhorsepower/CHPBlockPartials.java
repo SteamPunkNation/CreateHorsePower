@@ -11,13 +11,6 @@ public class CHPBlockPartials {
     public static PartialModel get(String path){
         return new PartialModel(CreateHorsePower.asResource("block/" + path));
     }
-
-    public static void register(FMLClientSetupEvent event){
-        load();
-    }
-
     public static void load(){
-        // init static fields
     }
-
 }
