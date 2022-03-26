@@ -4,26 +4,22 @@ import com.simibubi.create.content.contraptions.base.GeneratingKineticTileEntity
 import com.simibubi.create.foundation.gui.widgets.InterpolatedChasingValue;
 import com.steampunknation.createhorsepower.config.Config;
 import com.steampunknation.createhorsepower.utils.BlockRegister;
-import net.minecraft.entity.MobEntity;
 import net.minecraft.tileentity.TileEntityType;
 import net.minecraft.util.math.AxisAlignedBB;
-
-import java.util.List;
 
 
 public class HorseCrankTileEntity extends GeneratingKineticTileEntity {
     //Config variables
     private static final Integer
-    SMALL_CREATURE_SPEED = Config.SMALL_CREATURE_SPEED.get(),
-    SMALL_CREATURE_STRESS = Config.SMALL_CREATURE_STRESS.get(),
-    MEDIUM_CREATURE_SPEED = Config.MEDIUM_CREATURE_SPEED.get(),
-    MEDIUM_CREATURE_STRESS = Config.MEDIUM_CREATURE_STRESS.get(),
-    LARGE_CREATURE_SPEED = Config.LARGE_CREATURE_SPEED.get(),
-    LARGE_CREATURE_STRESS = Config.LARGE_CREATURE_STRESS.get();
+            SMALL_CREATURE_SPEED = Config.SMALL_CREATURE_SPEED.get(),
+            SMALL_CREATURE_STRESS = Config.SMALL_CREATURE_STRESS.get(),
+            MEDIUM_CREATURE_SPEED = Config.MEDIUM_CREATURE_SPEED.get(),
+            MEDIUM_CREATURE_STRESS = Config.MEDIUM_CREATURE_STRESS.get(),
+            LARGE_CREATURE_SPEED = Config.LARGE_CREATURE_SPEED.get(),
+            LARGE_CREATURE_STRESS = Config.LARGE_CREATURE_STRESS.get();
 
 
     //Create power variables
-    private float generatedCapacity;
     private float generatedSpeed;
     private boolean smallWorker = false;
     private boolean mediumWorker = false;
@@ -50,16 +46,13 @@ public class HorseCrankTileEntity extends GeneratingKineticTileEntity {
             return 0;
         }
 
-        if (smallWorker){
+        if (smallWorker) {
             generatedSpeed = SMALL_CREATURE_SPEED;
-        }
-        else if (mediumWorker){
+        } else if (mediumWorker) {
             generatedSpeed = MEDIUM_CREATURE_SPEED;
-        }
-        else if (largeWorker){
+        } else if (largeWorker) {
             generatedSpeed = LARGE_CREATURE_SPEED;
-        }
-        else{
+        } else {
             generatedSpeed = 0;
         }
 
@@ -69,7 +62,18 @@ public class HorseCrankTileEntity extends GeneratingKineticTileEntity {
     //Stress Unit NOT ROTATION SPEED
     @Override
     public float calculateAddedStressCapacity() {
-        float capacity = generatedSpeed / 4;
+        float capacity;
+
+        if (smallWorker) {
+            capacity = SMALL_CREATURE_STRESS / 4.0f;
+        } else if (mediumWorker) {
+            capacity = MEDIUM_CREATURE_STRESS / 8.0f;
+        } else if (largeWorker) {
+            capacity = LARGE_CREATURE_STRESS / 16.0f;
+        } else {
+            capacity = 0;
+        }
+
         this.lastCapacityProvided = capacity;
         return capacity;
     }
