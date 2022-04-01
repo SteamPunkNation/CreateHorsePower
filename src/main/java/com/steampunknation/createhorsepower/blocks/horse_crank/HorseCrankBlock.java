@@ -4,9 +4,12 @@ import com.simibubi.create.content.contraptions.base.KineticBlock;
 import com.simibubi.create.content.contraptions.relays.elementary.ICogWheel;
 import com.simibubi.create.foundation.block.ITE;
 import com.steampunknation.createhorsepower.utils.CHPTags;
+import com.steampunknation.createhorsepower.utils.CHPUtils;
 import com.steampunknation.createhorsepower.utils.TileEntityRegister;
 import com.steampunknation.createhorsepower.utils.CHPShapes;
 import net.minecraft.block.BlockState;
+import net.minecraft.entity.CreatureEntity;
+import net.minecraft.entity.Entity;
 import net.minecraft.entity.MobEntity;
 import net.minecraft.entity.player.PlayerEntity;
 import net.minecraft.item.ItemStack;
@@ -25,6 +28,7 @@ import net.minecraft.util.math.shapes.VoxelShape;
 import net.minecraft.world.IBlockReader;
 import net.minecraft.world.IWorldReader;
 import net.minecraft.world.World;
+import org.lwjgl.system.CallbackI;
 
 
 public class HorseCrankBlock extends KineticBlock implements ITE<HorseCrankTileEntity>, ICogWheel {
@@ -65,25 +69,29 @@ public class HorseCrankBlock extends KineticBlock implements ITE<HorseCrankTileE
 
     @Override
     public ActionResultType use(BlockState state, World worldIn, BlockPos pos, PlayerEntity player, Hand handIn, BlockRayTraceResult hit) {
+        ItemStack stack = handIn == Hand.MAIN_HAND ? player.getItemInHand(handIn) : ItemStack.EMPTY;
+        HorseCrankTileEntity teH = (HorseCrankTileEntity) worldIn.getBlockEntity(pos);
 
-        int i = pos.getX();
-        int j = pos.getY();
-        int k = pos.getZ();
+        CreatureEntity creature = null;
+        if (teH != null){
+            AxisAlignedBB aabb = new AxisAlignedBB(pos).inflate(7.0D);
 
-        for (MobEntity mobentity : worldIn.getEntitiesOfClass(MobEntity.class, new AxisAlignedBB((double) i - 7.0D, (double) j - 7.0D, (double) k - 7.0D, (double) i + 7.0D, (double) j + 7.0D, (double) k + 7.0D))) {
-            if (mobentity.getLeashHolder() == player){
-                if (CHPTags.Entities.SMALL_WORKER.contains(mobentity.getType())
-                || CHPTags.Entities.MEDIUM_WORKER.contains(mobentity.getType())
-                || CHPTags.Entities.LARGE_WORKER.contains(mobentity.getType())) {
-                    if (worldIn.isClientSide) {
-                        ItemStack stack = player.getItemInHand(handIn);
-                        return stack.getItem() == Items.LEAD ? ActionResultType.SUCCESS : ActionResultType.PASS;
-                    } else {
-                        return LeadItem.bindPlayerMobs(player, worldIn, pos);
-                    }
-                }
+            Entity entity = CHPUtils.getEntityWithinArea(worldIn, aabb, e -> e.isLeashed() && e.getLeashHolder() == player);
+            if (entity != null){
+                creature = (CreatureEntity) entity;
             }
         }
-        return ActionResultType.FAIL;
+
+        if (teH != null && ((stack.getItem() instanceof LeadItem && creature != null) || creature != null)) {
+            if (!teH.hasWorker()) {
+                creature.dropLeash(true, false);
+                teH.setWorker(creature);
+                return ActionResultType.SUCCESS;
+            } else {
+                return ActionResultType.FAIL;
+            }
+        }
+        teH.setChanged();
+        return ActionResultType.PASS;
     }
 }
