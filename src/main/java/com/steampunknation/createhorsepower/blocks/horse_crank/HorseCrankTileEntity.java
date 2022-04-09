@@ -54,7 +54,7 @@ public class HorseCrankTileEntity extends GeneratingKineticTileEntity {
     protected int target = origin;
 
     protected boolean hasWorker = false;
-    protected MobEntity worker;
+    protected CreatureEntity worker;
     protected CompoundNBT nbtWorker;
 
     protected boolean valid = false;
@@ -90,7 +90,7 @@ public class HorseCrankTileEntity extends GeneratingKineticTileEntity {
             generatedSpeed = MEDIUM_CREATURE_SPEED;
         } else if (largeWorker) {
             generatedSpeed = LARGE_CREATURE_SPEED;
-        } else {
+        } else{
             generatedSpeed = 0;
         }
 
@@ -136,6 +136,9 @@ public class HorseCrankTileEntity extends GeneratingKineticTileEntity {
 
         if (getGeneratedSpeed() != 0 && getSpeed() == 0)
             updateGeneratedRotation();
+        else if (getGeneratedSpeed() == 0){
+            updateGeneratedRotation();
+        }
 
         if (hasWorker() && CHPTags.Entities.LARGE_WORKER.contains(worker.getType())){
             smallWorker = false;
@@ -310,7 +313,7 @@ public class HorseCrankTileEntity extends GeneratingKineticTileEntity {
         }
     }
 
-    public MobEntity getWorker() {
+    public CreatureEntity getWorker() {
         return worker;
     }
 

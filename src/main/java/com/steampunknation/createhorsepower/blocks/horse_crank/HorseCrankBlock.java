@@ -84,6 +84,7 @@ public class HorseCrankBlock extends KineticBlock implements ITE<HorseCrankTileE
 
         if (teH != null && ((stack.getItem() instanceof LeadItem && creature != null) || creature != null)) {
             if (!teH.hasWorker()) {
+                LeadItem.bindPlayerMobs(player, worldIn, pos);
                 creature.dropLeash(true, false);
                 teH.setWorker(creature);
                 return ActionResultType.SUCCESS;
