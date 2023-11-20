@@ -1,5 +1,6 @@
 {
   "variants": {
-    "": { "model": "createhorsepower:block/horse_crank/block" }
+    "": { "model": "createhorsepower:block/horse_crank/block" },
+    "rotating": { "model": "createhorsepower:block/horse_crank/block" }
   }
 }

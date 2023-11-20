@@ -1,4 +1,4 @@
-package com.steampunknation.createhorsepower.config;
+package net.steampn.createhorsepower.config;
 
 import com.electronwill.nightconfig.core.file.CommentedFileConfig;
 import com.electronwill.nightconfig.core.io.WritingMode;

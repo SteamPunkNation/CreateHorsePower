@@ -1,8 +1,7 @@
-package com.steampunknation.createhorsepower.utils;
+package net.steampn.createhorsepower.utils;
 
 import com.jozufozu.flywheel.core.PartialModel;
-import com.steampunknation.createhorsepower.CreateHorsePower;
-import net.minecraftforge.fml.event.lifecycle.FMLClientSetupEvent;
+import net.steampn.createhorsepower.CreateHorsePower;
 
 public class CHPBlockPartials {
 

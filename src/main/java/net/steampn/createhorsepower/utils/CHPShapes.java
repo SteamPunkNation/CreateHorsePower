@@ -1,16 +1,14 @@
-package com.steampunknation.createhorsepower.utils;
-
-import static net.minecraft.util.Direction.UP;
-import java.util.function.BiFunction;
-import java.util.stream.Stream;
+package net.steampn.createhorsepower.utils;
 
 import com.simibubi.create.foundation.utility.VoxelShaper;
-import net.minecraft.block.Block;
-import net.minecraft.util.Direction;
-import net.minecraft.util.Direction.Axis;
-import net.minecraft.util.math.shapes.IBooleanFunction;
-import net.minecraft.util.math.shapes.VoxelShape;
-import net.minecraft.util.math.shapes.VoxelShapes;
+import net.minecraft.core.Direction;
+import net.minecraft.world.level.block.Block;
+import net.minecraft.world.phys.shapes.BooleanOp;
+import net.minecraft.world.phys.shapes.Shapes;
+import net.minecraft.world.phys.shapes.VoxelShape;
+
+import java.util.function.BiFunction;
+import java.util.stream.Stream;
 
 
 public class CHPShapes {
@@ -19,7 +17,7 @@ public class CHPShapes {
             Block.box(0, 0, 0, 16, 6, 16),
             Block.box(2, 6, 2, 14, 13, 14),
             Block.box(6, 12, 6, 10, 20, 10)
-    ).reduce((v1, v2) -> VoxelShapes.join(v1, v2, IBooleanFunction.OR)).get();
+    ).reduce((v1, v2) -> Shapes.join(v1, v2, BooleanOp.OR)).get();
 
     // From create:AllShapes
     public static Builder shape(VoxelShape shape) {
@@ -43,7 +41,7 @@ public class CHPShapes {
         }
 
         public Builder add(VoxelShape shape) {
-            this.shape = VoxelShapes.or(this.shape, shape);
+            this.shape = Shapes.or(this.shape, shape);
             return this;
         }
 
@@ -53,7 +51,7 @@ public class CHPShapes {
 
         public Builder erase(double x1, double y1, double z1, double x2, double y2, double z2) {
             this.shape =
-                    VoxelShapes.join(shape, cuboid(x1, y1, z1, x2, y2, z2), IBooleanFunction.ONLY_FIRST);
+                    Shapes.join(shape, cuboid(x1, y1, z1, x2, y2, z2), BooleanOp.ONLY_FIRST);
             return this;
         }
 
@@ -65,7 +63,7 @@ public class CHPShapes {
             return factory.apply(shape, direction);
         }
 
-        public VoxelShaper build(BiFunction<VoxelShape, Axis, VoxelShaper> factory, Axis axis) {
+        public VoxelShaper build(BiFunction<VoxelShape, Direction.Axis, VoxelShaper> factory, Direction.Axis axis) {
             return factory.apply(shape, axis);
         }
 
@@ -74,11 +72,11 @@ public class CHPShapes {
         }
 
         public VoxelShaper forAxis() {
-            return build(VoxelShaper::forAxis, Axis.Y);
+            return build(VoxelShaper::forAxis, Direction.Axis.Y);
         }
 
         public VoxelShaper forHorizontalAxis() {
-            return build(VoxelShaper::forHorizontalAxis, Axis.Z);
+            return build(VoxelShaper::forHorizontalAxis, Direction.Axis.Z);
         }
 
         public VoxelShaper forHorizontal(Direction direction) {
@@ -86,7 +84,7 @@ public class CHPShapes {
         }
 
         public VoxelShaper forDirectional() {
-            return forDirectional(UP);
+            return forDirectional(Direction.UP);
         }
 
     }

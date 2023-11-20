@@ -1,7 +1,8 @@
 {
-    "pack": {
-        "description": "Create Horse Power resources.",
-        "pack_format": 6,
-        "_comment": ""
-    }
+  "pack": {
+    "description": {
+      "text": "${mod_id} resources"
+    },
+    "pack_format": 15
+  }
 }
