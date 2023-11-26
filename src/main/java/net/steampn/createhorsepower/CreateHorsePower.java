@@ -18,6 +18,7 @@ import net.minecraftforge.fml.loading.FMLPaths;
 import net.steampn.createhorsepower.config.Config;
 import net.steampn.createhorsepower.utils.BlockRegister;
 import net.steampn.createhorsepower.utils.CHPBlockPartials;
+import net.steampn.createhorsepower.utils.EntityRegister;
 import net.steampn.createhorsepower.utils.TileEntityRegister;
 import org.slf4j.Logger;
 
@@ -38,6 +39,7 @@ public class CreateHorsePower
         CREATEREGISTRATE.registerEventListeners(modEventBus);
         BlockRegister.register();
         TileEntityRegister.register();
+        EntityRegister.ENTITIES.register(modEventBus);
 
         modEventBus.addListener(this::commonSetup);
 

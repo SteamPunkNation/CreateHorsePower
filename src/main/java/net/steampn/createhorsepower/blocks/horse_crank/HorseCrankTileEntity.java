@@ -3,24 +3,19 @@ package net.steampn.createhorsepower.blocks.horse_crank;
 import com.mojang.logging.LogUtils;
 import com.simibubi.create.content.kinetics.base.GeneratingKineticBlockEntity;
 import net.minecraft.core.BlockPos;
-import net.minecraft.tags.TagKey;
-import net.minecraft.world.entity.Entity;
-import net.minecraft.world.entity.EntityType;
 import net.minecraft.world.entity.Mob;
-import net.minecraft.world.entity.decoration.LeashFenceKnotEntity;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.block.entity.BlockEntityType;
 import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.phys.AABB;
 import net.steampn.createhorsepower.config.Config;
+import net.steampn.createhorsepower.entities.CHPLeashKnotEntity;
 import net.steampn.createhorsepower.utils.BlockRegister;
 import org.slf4j.Logger;
 
 import java.util.List;
 
 import static net.steampn.createhorsepower.utils.CHPProperties.*;
-import static net.steampn.createhorsepower.utils.CHPProperties.WORKER_LARGE_STATE;
-import static net.steampn.createhorsepower.utils.CHPTags.Entities.*;
 
 public class HorseCrankTileEntity extends GeneratingKineticBlockEntity {
     //Config variables
@@ -35,7 +30,6 @@ public class HorseCrankTileEntity extends GeneratingKineticBlockEntity {
     //Create power variables
     private float generatedSpeed;
     private static final Logger LOGGER = LogUtils.getLogger();
-    public Boolean hasWorker = false;
 
     public HorseCrankTileEntity(BlockEntityType<?> type, BlockPos pos, BlockState state) {
         super(type, pos, state);
@@ -95,7 +89,6 @@ public class HorseCrankTileEntity extends GeneratingKineticBlockEntity {
         Level level = this.getLevel();
         BlockPos pos = this.getBlockPos();
         HorseCrankTileEntity crankTileEntity = this;
-        AABB aabb = new AABB(pos).inflate(3.0D);
 
         //Update animation based on stats
         if (getGeneratedSpeed() != 0 && getSpeed() == 0)
@@ -108,80 +101,34 @@ public class HorseCrankTileEntity extends GeneratingKineticBlockEntity {
         if (level == null)
             return;
 
-        //Default state when worker is true and has one of the worker types true
-        if (hasWorker && (state.getValue(WORKER_SMALL_STATE) || state.getValue(WORKER_MEDIUM_STATE) || state.getValue(WORKER_LARGE_STATE)))
-            setDefaultStates(state, level, pos, crankTileEntity);
-
-        //Check for mob (worker)
-        for(Mob mob : level.getEntitiesOfClass(Mob.class, aabb)){
-
-            if (!mob.isLeashed() || hasWorker || this.hasLeashKnot(level, aabb))
-                continue;
-
-            List<TagKey<EntityType<?>>> worker = mob.getType().getTags().toList();
-
-            if (worker.contains(SMALL_WORKER_TAG)) enableOnlySmallWorker(state, level, pos, crankTileEntity);
-            else if (worker.contains(MEDIUM_WORKER_TAG)) enableOnlyMediumWorker(state, level, pos, crankTileEntity);
-            else if (worker.contains(LARGE_WORKER_TAG)) enableOnlyLargeWorker(state, level, pos, crankTileEntity);
+        if (level.getBlockState(pos).getValue(HAS_WORKER)) {
+            if (!level.isClientSide()) {
+                Mob workerEntity = getWorker(level, pos);
+                if(workerEntity == null || !workerEntity.isAlive() || !workerEntity.isLeashed()) {
+                    LOGGER.info("Worker is not available or alive or leashed. Resetting state.");
+                    level.setBlock(pos, state.setValue(HAS_WORKER, false).setValue(WORKER_LARGE_STATE, false)
+                            .setValue(WORKER_MEDIUM_STATE, false).setValue(WORKER_SMALL_STATE, false), 3);
+                }
+            }
         }
+
         crankTileEntity.setChanged();
     }
 
-    public Boolean hasLeashKnot(Level level, AABB aabb){
-        return level.getEntitiesOfClass(LeashFenceKnotEntity.class, aabb).isEmpty();
-    }
-
-    public void setDefaultStates(BlockState state, Level level, BlockPos pos, HorseCrankTileEntity te){
-        level.setBlock(pos, state
-                .setValue(WORKER_SMALL_STATE, false)
-                .setValue(WORKER_MEDIUM_STATE, false)
-                .setValue(WORKER_LARGE_STATE, false),
-                3);
-        LOGGER.info("Default state!");
-        te.setChanged();
-        hasWorker = false;
-    }
-
-    public void enableOnlySmallWorker(BlockState state, Level level, BlockPos pos, HorseCrankTileEntity te){
-        //If horse crank has worker and worker state is true, ignore
-        if (hasWorker && state.getValue(WORKER_SMALL_STATE))
-            return;
-
-        level.setBlock(pos, state
-                        .setValue(WORKER_SMALL_STATE, true)
-                        .setValue(WORKER_MEDIUM_STATE, false)
-                        .setValue(WORKER_LARGE_STATE, false),
-                3);
-        LOGGER.info("Small worker attached!");
-        te.setChanged();
-        hasWorker = true;
-    }
-    public void enableOnlyMediumWorker(BlockState state, Level level, BlockPos pos, HorseCrankTileEntity te){
-        //If horse crank has worker and worker state is true, ignore
-        if (hasWorker && state.getValue(WORKER_MEDIUM_STATE))
-            return;
-
-        level.setBlock(pos, state
-                        .setValue(WORKER_SMALL_STATE, false)
-                        .setValue(WORKER_MEDIUM_STATE, true)
-                        .setValue(WORKER_LARGE_STATE, false),
-                3);
-        LOGGER.info("Medium worker attached!");
-        te.setChanged();
-        hasWorker = true;
-    }
-    public void enableOnlyLargeWorker(BlockState state, Level level, BlockPos pos, HorseCrankTileEntity te){
-        //If horse crank has worker and worker state is true, ignore
-        if (hasWorker && state.getValue(WORKER_LARGE_STATE))
-            return;
-
-        level.setBlock(pos, state
-                        .setValue(WORKER_SMALL_STATE, false)
-                        .setValue(WORKER_MEDIUM_STATE, false)
-                        .setValue(WORKER_LARGE_STATE, true),
-                3);
-        LOGGER.info("Large worker attached!");
-        te.setChanged();
-        hasWorker = true;
+    private Mob getWorker(Level world, BlockPos pos) {
+        List<Mob> mobs = world.getEntitiesOfClass(Mob.class, new AABB(pos).inflate(3.0D));
+        LOGGER.info("Mobs in TE range: " + mobs);
+        for(Mob mob : mobs) {
+            LOGGER.info(mob + " is leashed?: " + (mob.isLeashed() ? "True" : "False"));
+            if(mob.isLeashed()
+                    && mob.getLeashHolder() != null
+                    && mob.getLeashHolder() instanceof CHPLeashKnotEntity
+                    && ((CHPLeashKnotEntity) mob.getLeashHolder()).getPos().equals(pos)) {
+                LOGGER.info("(Tile Entity) Worker found: " + mob);
+                return mob;
+            }
+        }
+        LOGGER.info("(Tile Entity) No worker found at pos: " + pos);
+        return null;
     }
 }
