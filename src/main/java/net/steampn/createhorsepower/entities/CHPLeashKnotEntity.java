@@ -10,6 +10,7 @@ import net.minecraft.world.entity.decoration.HangingEntity;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.Items;
 import net.minecraft.world.level.Level;
+import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.phys.AABB;
 import net.steampn.createhorsepower.utils.BlockRegister;
 import net.steampn.createhorsepower.utils.EntityRegister;
@@ -52,7 +53,8 @@ public class CHPLeashKnotEntity extends HangingEntity {
 
     @Override
     public boolean survives() {
-        return this.level().getBlockState(this.pos).is(BlockRegister.HORSE_CRANK.get());
+        BlockState blockState = this.level().getBlockState(this.pos);
+        return blockState.is(BlockRegister.HORSE_CRANK.get());
     }
 
     protected void recalculateBoundingBox() {

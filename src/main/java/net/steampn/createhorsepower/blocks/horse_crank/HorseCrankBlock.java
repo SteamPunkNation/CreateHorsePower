@@ -11,7 +11,6 @@ import net.minecraft.world.InteractionHand;
 import net.minecraft.world.InteractionResult;
 import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.Mob;
-import net.minecraft.world.entity.decoration.LeashFenceKnotEntity;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.Items;
@@ -35,10 +34,10 @@ import net.steampn.createhorsepower.utils.TileEntityRegister;
 import org.slf4j.Logger;
 
 import java.util.List;
-import java.util.stream.Collectors;
 
 import static net.steampn.createhorsepower.utils.CHPProperties.*;
-import static net.steampn.createhorsepower.utils.CHPTags.Entities.*;
+import static net.steampn.createhorsepower.utils.CHPUtils.checkForMobsInVicinity;
+import static net.steampn.createhorsepower.utils.CHPUtils.getWorker;
 
 public class HorseCrankBlock extends KineticBlock implements IBE<HorseCrankTileEntity>, ICogWheel {
     private static final Logger LOGGER = LogUtils.getLogger();
@@ -82,11 +81,6 @@ public class HorseCrankBlock extends KineticBlock implements IBE<HorseCrankTileE
     }
 
     @Override
-    public boolean hideStressImpact() {
-        return false;
-    }
-
-    @Override
     public boolean hasShaftTowards(LevelReader world, BlockPos pos, BlockState state, Direction face) {
         return face == Direction.DOWN;
     }
@@ -115,74 +109,51 @@ public class HorseCrankBlock extends KineticBlock implements IBE<HorseCrankTileE
 
         LOGGER.info("Item is: " + stack.getItem());
 
-        if (!worldIn.isClientSide()) {
-            if(stack.isEmpty() && state.getValue(HAS_WORKER)) {
-                Mob workerEntity = getWorker(worldIn, pos);
-                if(workerEntity != null && workerEntity.isLeashed()) {
-                    worldIn.getEntitiesOfClass(CHPLeashKnotEntity.class, new AABB(pos).inflate(0.2D))
-                            .forEach(Entity::kill);
-                    LOGGER.info("Leash Knot killed!");
-                    workerEntity.dropLeash(true, !workerEntity.isSilent());
+        if (worldIn.isClientSide()) return InteractionResult.PASS;
+
+        if(stack.isEmpty() && state.getValue(HAS_WORKER)) return removeLeashKnot(worldIn, pos);
+
+        else if (!(stack.getItem() == Items.LEAD)) return InteractionResult.PASS;
+
+        List<Mob> mobsInVicinity = worldIn.getEntitiesOfClass(Mob.class, new AABB(pos).inflate(2.0D));
+
+        long mobsAttachedToPlayer = mobsInVicinity.stream().filter(mob -> mob.isLeashed() && mob.getLeashHolder() == player).count();
+
+        if(mobsAttachedToPlayer > 1) {
+            player.displayClientMessage(Component.translatable("tooltip1.createhorsepower.horse_crank"), true);
+            return InteractionResult.FAIL;
+        }
+
+        if(state.getValue(HAS_WORKER)) {
+            player.displayClientMessage(Component.translatable("tooltip2.createhorsepower.horse_crank"), true);
+            return InteractionResult.FAIL; // already has a worker, so early return
+        }
+
+        return checkForMobsInVicinity(mobsInVicinity, player, worldIn, pos, state);
+    }
+
+    private InteractionResult removeLeashKnot(Level worldIn, BlockPos pos){
+        Mob workerEntity = getWorker(worldIn, pos);
+        if(workerEntity != null && workerEntity.isLeashed()) {
+            worldIn.getEntitiesOfClass(CHPLeashKnotEntity.class, new AABB(pos).inflate(0.2D))
+                    .forEach(Entity::kill);
+            LOGGER.info("Leash Knot killed!");
+            workerEntity.dropLeash(true, !workerEntity.isSilent());
 //                    player.addItem(new ItemStack(Items.LEAD, 1));
-                    return InteractionResult.SUCCESS;
-                }
-            }
-            else if(stack.getItem() == Items.LEAD) {
-                List<Mob> mobsInVicinity = worldIn.getEntitiesOfClass(Mob.class, new AABB(pos).inflate(2.0D));
-
-                long mobsAttachedToPlayer = mobsInVicinity.stream().filter(mob -> mob.isLeashed() && mob.getLeashHolder() == player).count();
-                if(mobsAttachedToPlayer > 1) {
-                    player.displayClientMessage(Component.literal("Only one mob can be attached"), true);
-                    return InteractionResult.FAIL;
-                }
-
-                if(state.getValue(HAS_WORKER)) {
-                    return InteractionResult.FAIL; // already has a worker, so early return
-                }
-
-                for(Mob mob : mobsInVicinity) {
-                    if(mob.isLeashed() && mob.getLeashHolder() == player) {
-                        if(!(mob.getType().getTags().toList().contains(LARGE_WORKER_TAG) || mob.getType().getTags().toList().contains(MEDIUM_WORKER_TAG) || mob.getType().getTags().toList().contains(SMALL_WORKER_TAG))) {
-                            return InteractionResult.FAIL; // mob does not have any of the valid tags, so early return
-                        }
-
-                        CHPLeashKnotEntity leashKnot = new CHPLeashKnotEntity(worldIn, pos);
-                        worldIn.addFreshEntity(leashKnot);
-                        mob.setLeashedTo(leashKnot, true);
-//                        if(!player.isCreative()) {
-//                            stack.shrink(1); // remove lead from player inventory
-//                        }
-                        updateBlockStateBasedOnMob(mob, state, worldIn, pos);
-                        return InteractionResult.SUCCESS;
-                    }
-                }
-            }
+            return InteractionResult.SUCCESS;
         }
-        return InteractionResult.PASS;
+        return InteractionResult.FAIL;
     }
 
-    public void updateBlockStateBasedOnMob(Mob mob, BlockState state, Level world, BlockPos pos) {
-        if(mob.getType().getTags().toList().contains(LARGE_WORKER_TAG)) {
-            world.setBlock(pos, state.setValue(HAS_WORKER, true).setValue(WORKER_LARGE_STATE, true), 2);
-        }
-        else if(mob.getType().getTags().toList().contains(MEDIUM_WORKER_TAG)) {
-            world.setBlock(pos, state.setValue(HAS_WORKER, true).setValue(WORKER_MEDIUM_STATE, true), 2);
-        }
-        else if(mob.getType().getTags().toList().contains(SMALL_WORKER_TAG)) {
-            world.setBlock(pos, state.setValue(HAS_WORKER, true).setValue(WORKER_SMALL_STATE, true), 2);
-        }
-    }
-
-    private Mob getWorker(Level world, BlockPos pos) {
-        List<Mob> mobs = world.getEntitiesOfClass(Mob.class, new AABB(pos).inflate(3.0D));
-        for(Mob mob : mobs) {
-            if(mob.isLeashed() && mob.getLeashHolder() instanceof CHPLeashKnotEntity && ((CHPLeashKnotEntity) mob.getLeashHolder()).getPos().equals(pos)) {
-                LOGGER.info("(Block) Worker found: " + mob);
-                LOGGER.info("Is leashed?: " + (mob.isLeashed() ? "True" : "False"));
-                return mob;
-            }
-        }
-        LOGGER.info("(Block) No worker found at pos: " + pos);
-        return null;
-    }
+//    public static void updateBlockStateBasedOnMob(Mob mob, BlockState state, Level world, BlockPos pos) {
+//        if(mob.getType().getTags().toList().contains(LARGE_WORKER_TAG)) {
+//            world.setBlock(pos, state.setValue(HAS_WORKER, true).setValue(WORKER_LARGE_STATE, true), 3);
+//        }
+//        else if(mob.getType().getTags().toList().contains(MEDIUM_WORKER_TAG)) {
+//            world.setBlock(pos, state.setValue(HAS_WORKER, true).setValue(WORKER_MEDIUM_STATE, true), 3);
+//        }
+//        else if(mob.getType().getTags().toList().contains(SMALL_WORKER_TAG)) {
+//            world.setBlock(pos, state.setValue(HAS_WORKER, true).setValue(WORKER_SMALL_STATE, true), 3);
+//        }
+//    }
 }

@@ -1,4 +1,8 @@
 {
   "block.createhorsepower.horse_crank": "Horse Crank",
-  "item.createhorsepower.horse_crank": "Horse Crank"
+  "item.createhorsepower.horse_crank": "Horse Crank",
+  "entity.createhorsepower.chp_leash_knot": "(CHP) Leash Knot",
+  "tooltip1.createhorsepower.horse_crank" : "Only one mob can be attached",
+  "tooltip2.createhorsepower.horse_crank" : "Can not attach, already has worker",
+  "tooltip3.createhorsepower.horse_crank" : "Mob is not a valid worker"
 }
