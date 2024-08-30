@@ -4,69 +4,66 @@ import com.mojang.logging.LogUtils;
 import com.simibubi.create.content.kinetics.base.GeneratingKineticBlockEntity;
 import net.minecraft.core.BlockPos;
 import net.minecraft.nbt.CompoundTag;
-import net.minecraft.world.entity.Mob;
-import net.minecraft.world.level.Level;
+import net.minecraft.network.chat.Component;
+import net.minecraft.resources.ResourceLocation;
+import net.minecraft.world.level.block.AirBlock;
+import net.minecraft.world.level.block.Block;
+import net.minecraft.world.level.block.Blocks;
 import net.minecraft.world.level.block.entity.BlockEntityType;
 import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.phys.AABB;
+import net.minecraftforge.common.MinecraftForge;
+import net.minecraftforge.event.level.BlockEvent;
+import net.minecraftforge.registries.ForgeRegistries;
 import net.steampn.createhorsepower.config.Config;
-import net.steampn.createhorsepower.utils.BlockRegister;
+import net.steampn.createhorsepower.registry.BlockRegister;
 import org.slf4j.Logger;
 
-import static net.steampn.createhorsepower.utils.CHPProperties.*;
-import static net.steampn.createhorsepower.utils.CHPUtils.getWorker;
-import static net.steampn.createhorsepower.utils.CHPUtils.updateBlockStateBasedOnMob;
+import java.util.Arrays;
+import java.util.HashSet;
+import java.util.List;
+import java.util.Set;
+import java.util.stream.Stream;
+
+import static net.steampn.createhorsepower.blocks.horse_crank.HorseCrankBlock.*;
 
 public class HorseCrankTileEntity extends GeneratingKineticBlockEntity {
-    //Config variables
-    private static final Integer
-            SMALL_CREATURE_SPEED = Config.SMALL_CREATURE_SPEED.get(),
-            SMALL_CREATURE_STRESS = Config.SMALL_CREATURE_STRESS.get(),
-            MEDIUM_CREATURE_SPEED = Config.MEDIUM_CREATURE_SPEED.get(),
-            MEDIUM_CREATURE_STRESS = Config.MEDIUM_CREATURE_STRESS.get(),
-            LARGE_CREATURE_SPEED = Config.LARGE_CREATURE_SPEED.get(),
-            LARGE_CREATURE_STRESS = Config.LARGE_CREATURE_STRESS.get();
-
-    public Boolean
-            smallWorkerState = this.getBlockState().hasProperty(WORKER_SMALL_STATE) ? this.getBlockState().getValue(WORKER_SMALL_STATE) : false,
-            mediumWorkerState = this.getBlockState().hasProperty(WORKER_MEDIUM_STATE) ? this.getBlockState().getValue(WORKER_MEDIUM_STATE) : false,
-            largeWorkerState = this.getBlockState().hasProperty(WORKER_LARGE_STATE) ? this.getBlockState().getValue(WORKER_LARGE_STATE) : false,
-            hasWorker = this.getBlockState().hasProperty(HAS_WORKER) ? this.getBlockState().getValue(HAS_WORKER) : false;
-
     private static final Logger LOGGER = LogUtils.getLogger();
+    private boolean hasValidWorkingBlocks = false;
+    private float rpmModifier = 0.0f;
 
     public HorseCrankTileEntity(BlockEntityType<?> type, BlockPos pos, BlockState state) {
         super(type, pos, state);
     }
 
-    //Rotation Speed NOT STRESS UNIT
     @Override
     public float getGeneratedSpeed() {
         float generatedSpeed;
         BlockState state = getBlockState();
 
-        if (!BlockRegister.HORSE_CRANK.has(getBlockState())) return 0;
+        if(!BlockRegister.HORSE_CRANK.has(getBlockState())) return 0;
 
-        if (state.getValue(WORKER_SMALL_STATE))  generatedSpeed = SMALL_CREATURE_SPEED;
-        else if (state.getValue(WORKER_MEDIUM_STATE))  generatedSpeed = MEDIUM_CREATURE_SPEED;
-        else if (state.getValue(WORKER_LARGE_STATE))  generatedSpeed = LARGE_CREATURE_SPEED;
-        else generatedSpeed = 0;
+        if(!state.getValue(HAS_WORKER)) return 0;
 
+        if(!hasValidWorkingBlocks) return 0;
+
+        generatedSpeed = 4 * rpmModifier;
 
         return generatedSpeed;
     }
 
-    //Stress Unit NOT ROTATION SPEED
     @Override
     public float calculateAddedStressCapacity() {
         float capacity;
         BlockState state = getBlockState();
 
-        if (!BlockRegister.HORSE_CRANK.has(getBlockState())) return 0;
+        if(!BlockRegister.HORSE_CRANK.has(getBlockState())) return 0;
 
-        if (state.getValue(WORKER_SMALL_STATE)) capacity = SMALL_CREATURE_STRESS / 4.0f;
-        else if (state.getValue(WORKER_MEDIUM_STATE)) capacity = MEDIUM_CREATURE_STRESS / 8.0f;
-        else if (state.getValue(WORKER_LARGE_STATE)) capacity = LARGE_CREATURE_STRESS / 16.0f;
+        if(!state.getValue(HAS_WORKER)) return 0;
+
+        if(state.getValue(SMALL_WORKER_STATE)) capacity = Config.small_creature_stress / getSpeed();
+        else if(state.getValue(MEDIUM_WORKER_STATE)) capacity = Config.medium_creature_stress / getSpeed();
+        else if(state.getValue(LARGE_WORKER_STATE)) capacity = Config.large_creature_stress / getSpeed();
         else capacity = 0;
 
         this.lastCapacityProvided = capacity;
@@ -80,66 +77,71 @@ public class HorseCrankTileEntity extends GeneratingKineticBlockEntity {
 
     @Override
     protected void write(CompoundTag compound, boolean clientPacket) {
-        compound.putBoolean("mediumWorkerState", mediumWorkerState);
-        compound.putBoolean("largeWorkerState", largeWorkerState);
-        compound.putBoolean("hasWorker", hasWorker);
-
-        LOGGER.info("Written to NBT: HasWorker {}, SmallWorkerState {}, MediumWorkerState {}, LargeWorkerState {}",
-                hasWorker, smallWorkerState, mediumWorkerState, largeWorkerState);
-
         super.write(compound, clientPacket);
     }
 
     @Override
     protected void read(CompoundTag compound, boolean clientPacket) {
-        hasWorker = compound.getBoolean("hasWorker");
-        smallWorkerState = compound.getBoolean("smallWorkerState");
-        mediumWorkerState = compound.getBoolean("mediumWorkerState");
-        largeWorkerState = compound.getBoolean("largeWorkerState");
-
-        LOGGER.info("Read from NBT: HasWorker {}, SmallWorkerState {}, MediumWorkerState {}, LargeWorkerState {}",
-                hasWorker, smallWorkerState, mediumWorkerState, largeWorkerState);
         super.read(compound, clientPacket);
     }
 
     @Override
     public void tick() {
-        BlockPos pos = this.getBlockPos();
         super.tick();
         if (level == null || level.isClientSide()) return;
 
-        Mob workerEntity = getWorker(level, pos);
-        if (workerEntity == null || !workerEntity.isAlive() || !workerEntity.isLeashed()) {
-            updateToDefaultState(getBlockState(), pos, level);
-        }
+        Block[] blockTypeGrid = getValidSurroundingPathBlocks();
+        Set<Block> blockSet = surroundingValidBlocksSet(blockTypeGrid);
 
-        if(workerEntity != null) updateBlockStateBasedOnMob(workerEntity, this.getBlockState(), level, pos);
-
-        smallWorkerState = this.getBlockState().getValue(WORKER_SMALL_STATE);
-        mediumWorkerState = this.getBlockState().getValue(WORKER_MEDIUM_STATE);
-        largeWorkerState = this.getBlockState().getValue(WORKER_LARGE_STATE);
-        hasWorker = this.getBlockState().getValue(HAS_WORKER);
+        // If blocks in set are not all valid, disable block
+        if (blockSet.contains(null)) hasValidWorkingBlocks = false;
+        // If all valid blocks are the same
+        else adjustRPMModifier(blockSet);
 
         updateAnimation();
     }
 
-    private void updateToDefaultState(BlockState state, BlockPos pos, Level level){
-        LOGGER.info("Worker is not available or alive or leashed. Resetting state.");
-        level.setBlock(pos, state.setValue(HAS_WORKER, false).setValue(WORKER_LARGE_STATE, false)
-                .setValue(WORKER_MEDIUM_STATE, false).setValue(WORKER_SMALL_STATE, false), 3);
+    private void adjustRPMModifier(Set<Block> blockSet){
+        hasValidWorkingBlocks = true;
+        // If all blocks in set are valid but different, apply rpm to the lowest value
+        if (blockSet.stream().anyMatch(Config.poor_path::contains)){
+            rpmModifier = 0.5f;
+        }
+        else if (blockSet.stream().anyMatch(Config.normal_path::contains)){
+            rpmModifier = 1.0f;
+        }
+        else if (blockSet.stream().anyMatch(Config.great_path::contains)){
+            rpmModifier = 2.0f;
+        }
+    }
 
-        // Update the Tile Entity's internal state
-        hasWorker = false;
-        smallWorkerState = false;
-        mediumWorkerState = false;
-        largeWorkerState = false;
+    private Set<Block> surroundingValidBlocksSet(Block[] surroundingBlocks){
+        return new HashSet<>(Arrays.asList(surroundingBlocks));
+    }
 
-        // Mark the Tile Entity as changed to trigger saving
-        setChanged();
+    private Block[] getValidSurroundingPathBlocks(){
+        BlockPos pos = this.getBlockPos();
+        Block[] blockTypeGrid = new Block[24];
+        int gridCount = 0;
+
+        for (int z = pos.getZ() - 2; z <= pos.getZ() + 2; z++){
+            for (int x = pos.getX() - 2; x <= pos.getX() + 2; x++){
+                if(z == pos.getZ() && x == pos.getX()) continue;
+                BlockPos targetPos = new BlockPos(x, pos.getY() - 1, z);
+
+                BlockState targetedBlock = level.getBlockState(targetPos);
+
+                if(Stream.of(Config.poor_path, Config.normal_path, Config.great_path)
+                        .anyMatch(path -> path.contains(targetedBlock.getBlock()))){
+                    blockTypeGrid[gridCount] = targetedBlock.getBlock();
+                }
+                gridCount++;
+            }
+        }
+        return blockTypeGrid;
     }
 
     private void updateAnimation(){
-        //Update animation based on stats
         if (getGeneratedSpeed() == 0) updateGeneratedRotation();
 
         if (getGeneratedSpeed() < 0 || getSpeed() < 0){

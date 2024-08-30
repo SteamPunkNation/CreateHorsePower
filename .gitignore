@@ -23,9 +23,8 @@ run
 
 # Files from Forge MDK
 forge*changelog.txt
-.DS_Store
-changelog.txt
-changelog.txt
-gradle/wrapper/gradle-wrapper.jar
-gradle/wrapper/gradle-wrapper.properties
-README.txt
+
+# Files from build
+run
+run-data
+test

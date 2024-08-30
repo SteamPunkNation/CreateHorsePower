@@ -7,13 +7,19 @@ import com.simibubi.create.foundation.block.IBE;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
 import net.minecraft.network.chat.Component;
+import net.minecraft.resources.ResourceLocation;
+import net.minecraft.tags.BlockTags;
 import net.minecraft.world.InteractionHand;
 import net.minecraft.world.InteractionResult;
 import net.minecraft.world.entity.Entity;
+import net.minecraft.world.entity.EntityType;
 import net.minecraft.world.entity.Mob;
+import net.minecraft.world.entity.MobType;
+import net.minecraft.world.entity.decoration.LeashFenceKnotEntity;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.Items;
+import net.minecraft.world.item.LeadItem;
 import net.minecraft.world.item.context.BlockPlaceContext;
 import net.minecraft.world.level.BlockGetter;
 import net.minecraft.world.level.Level;
@@ -23,36 +29,41 @@ import net.minecraft.world.level.block.entity.BlockEntity;
 import net.minecraft.world.level.block.entity.BlockEntityType;
 import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.level.block.state.StateDefinition;
+import net.minecraft.world.level.block.state.properties.BooleanProperty;
 import net.minecraft.world.level.pathfinder.PathComputationType;
 import net.minecraft.world.phys.AABB;
 import net.minecraft.world.phys.BlockHitResult;
 import net.minecraft.world.phys.shapes.CollisionContext;
 import net.minecraft.world.phys.shapes.VoxelShape;
-import net.steampn.createhorsepower.entities.CHPLeashKnotEntity;
+import net.minecraftforge.registries.ForgeRegistries;
+import net.steampn.createhorsepower.config.Config;
+import net.steampn.createhorsepower.registry.BlockRegister;
+import net.steampn.createhorsepower.registry.TileEntityRegister;
 import net.steampn.createhorsepower.utils.CHPShapes;
-import net.steampn.createhorsepower.utils.TileEntityRegister;
+import org.jetbrains.annotations.Nullable;
 import org.slf4j.Logger;
 
 import java.util.List;
+import java.util.stream.Stream;
 
-import static net.steampn.createhorsepower.utils.CHPProperties.*;
-import static net.steampn.createhorsepower.utils.CHPUtils.checkForMobsInVicinity;
-import static net.steampn.createhorsepower.utils.CHPUtils.getWorker;
-
-public class HorseCrankBlock extends KineticBlock implements IBE<HorseCrankTileEntity>, ICogWheel {
+public class HorseCrankBlock extends KineticBlock implements ICogWheel, IBE<HorseCrankTileEntity> {
     private static final Logger LOGGER = LogUtils.getLogger();
+    public static final BooleanProperty HAS_WORKER = BooleanProperty.create("has_worker");
+    public static final BooleanProperty SMALL_WORKER_STATE = BooleanProperty.create("small_worker");
+    public static final BooleanProperty MEDIUM_WORKER_STATE = BooleanProperty.create("medium_worker");
+    public static final BooleanProperty LARGE_WORKER_STATE = BooleanProperty.create("large_worker");
     public HorseCrankBlock(Properties properties) {
         super(properties);
         registerDefaultState(defaultBlockState()
                 .setValue(HAS_WORKER, false)
-                .setValue(WORKER_SMALL_STATE, false)
-                .setValue(WORKER_MEDIUM_STATE, false)
-                .setValue(WORKER_LARGE_STATE,false));
+                .setValue(SMALL_WORKER_STATE, false)
+                .setValue(MEDIUM_WORKER_STATE, false)
+                .setValue(LARGE_WORKER_STATE, false));
     }
 
     @Override
     protected void createBlockStateDefinition(StateDefinition.Builder<Block, BlockState> builder) {
-        super.createBlockStateDefinition(builder.add(HAS_WORKER,WORKER_SMALL_STATE,WORKER_MEDIUM_STATE,WORKER_LARGE_STATE));
+        super.createBlockStateDefinition(builder.add(HAS_WORKER,SMALL_WORKER_STATE, MEDIUM_WORKER_STATE, LARGE_WORKER_STATE));
     }
 
     @Override
@@ -60,6 +71,7 @@ public class HorseCrankBlock extends KineticBlock implements IBE<HorseCrankTileE
         return CHPShapes.HORSE_CRANK;
     }
 
+    @Nullable
     @Override
     public BlockState getStateForPlacement(BlockPlaceContext context) {
         return super.getStateForPlacement(context);
@@ -76,7 +88,7 @@ public class HorseCrankBlock extends KineticBlock implements IBE<HorseCrankTileE
     }
 
     @Override
-    public boolean isPathfindable(BlockState state, BlockGetter reader, BlockPos pos, PathComputationType type) {
+    public boolean isPathfindable(BlockState state, BlockGetter getter, BlockPos pos, PathComputationType type) {
         return false;
     }
 
@@ -95,65 +107,98 @@ public class HorseCrankBlock extends KineticBlock implements IBE<HorseCrankTileE
         return TileEntityRegister.HORSE_CRANK.get();
     }
 
-
     @Override
     public BlockEntity newBlockEntity(BlockPos pos, BlockState state) {
         return TileEntityRegister.HORSE_CRANK.create(pos,state);
     }
 
     @Override
-    public InteractionResult use(BlockState state, Level worldIn, BlockPos pos, Player player, InteractionHand handIn, BlockHitResult hit) {
-        ItemStack stack = player.getItemInHand(handIn);
+    public InteractionResult use(BlockState state, Level level, BlockPos pos, Player player, InteractionHand hand, BlockHitResult hit) {
+        // Client side show hand interacting only
+        if (level.isClientSide()) return InteractionResult.PASS;
+        // If hand interacting was not Main Hand, ignore
+        if (hand != InteractionHand.MAIN_HAND) return InteractionResult.PASS;
 
-        if (handIn != InteractionHand.MAIN_HAND) return InteractionResult.PASS;
+        ItemStack itemStack = player.getItemInHand(hand);
+        // If player hand is holding anything besides a lead, ignore
+        if (itemStack.getItem() != Items.LEAD && !itemStack.isEmpty()) return InteractionResult.PASS;
 
-        LOGGER.info("Item is: " + stack.getItem());
-
-        if (worldIn.isClientSide()) return InteractionResult.PASS;
-
-        if(stack.isEmpty() && state.getValue(HAS_WORKER)) return removeLeashKnot(worldIn, pos);
-
-        else if (!(stack.getItem() == Items.LEAD)) return InteractionResult.PASS;
-
-        List<Mob> mobsInVicinity = worldIn.getEntitiesOfClass(Mob.class, new AABB(pos).inflate(2.0D));
-
-        long mobsAttachedToPlayer = mobsInVicinity.stream().filter(mob -> mob.isLeashed() && mob.getLeashHolder() == player).count();
-
-        if(mobsAttachedToPlayer > 1) {
-            player.displayClientMessage(Component.translatable("tooltip1.createhorsepower.horse_crank"), true);
-            return InteractionResult.FAIL;
+        //If hand is empty, detach mob if mob is attached to block
+        if (itemStack.isEmpty()) {
+            level.setBlock(pos, state.setValue(HAS_WORKER, false).setValue(SMALL_WORKER_STATE, false).setValue(MEDIUM_WORKER_STATE, false).setValue(LARGE_WORKER_STATE, false), 3);
+            return killLeashEntity(level, pos);
         }
 
-        if(state.getValue(HAS_WORKER)) {
-            player.displayClientMessage(Component.translatable("tooltip2.createhorsepower.horse_crank"), true);
-            return InteractionResult.FAIL; // already has a worker, so early return
+        //TODO If hand has Lead, attach mob and consume Lead Item
+        if (itemStack.getItem() == Items.LEAD){
+            //Check if crank already has mob attached, if so do nothing
+            long leashKnots = level.getEntitiesOfClass(LeashFenceKnotEntity.class, new AABB(pos).inflate(0.2D)).size();
+            if (leashKnots > 0){
+                player.displayClientMessage(Component.translatable("tooltip.createhorsepower.horse_crank.alreadyHasWorker"), true);
+                return InteractionResult.FAIL;
+            }
+
+            List<Mob> mobsNearPlayer = level.getEntitiesOfClass(Mob.class, new AABB(pos).inflate(7.0D));
+
+            //If num of mobs attached to player is 0, do nothing
+            if (mobsNearPlayer.stream().filter(mob -> mob.isLeashed() &&  mob.getLeashHolder() == player).count() <= 0){
+                return InteractionResult.FAIL;
+            }
+
+            //If num of mobs attached to player is > 1, do nothing
+            if (mobsNearPlayer.stream().filter(mob -> mob.isLeashed() &&  mob.getLeashHolder() == player).count() > 1){
+                player.displayClientMessage(Component.translatable("tooltip.createhorsepower.horse_crank.maximumMobs"), true);
+                return InteractionResult.FAIL;
+            }
+            //Get what mob and verify its worker status, if not worker do nothing
+            if (!verifyMobIsInConfig(getMobType(mobsNearPlayer, player), level, pos, state)){
+                player.displayClientMessage(Component.translatable("tooltip.createhorsepower.horse_crank.notValidWorker"), true);
+                return InteractionResult.FAIL;
+            }
+
+            LeadItem.bindPlayerMobs(player, level, pos);
+            player.displayClientMessage(Component.translatable("tooltip.createhorsepower.horse_crank.attached"), true);
+            LOGGER.debug("Stress for small is " + Config.small_creature_stress);
+            return InteractionResult.sidedSuccess(level.isClientSide);
         }
 
-        return checkForMobsInVicinity(mobsInVicinity, player, worldIn, pos, state);
-    }
-
-    private InteractionResult removeLeashKnot(Level worldIn, BlockPos pos){
-        Mob workerEntity = getWorker(worldIn, pos);
-        if(workerEntity != null && workerEntity.isLeashed()) {
-            worldIn.getEntitiesOfClass(CHPLeashKnotEntity.class, new AABB(pos).inflate(0.2D))
-                    .forEach(Entity::kill);
-            LOGGER.info("Leash Knot killed!");
-            workerEntity.dropLeash(true, !workerEntity.isSilent());
-//                    player.addItem(new ItemStack(Items.LEAD, 1));
-            return InteractionResult.SUCCESS;
-        }
+        // Anything else happens, FAIL
         return InteractionResult.FAIL;
     }
 
-//    public static void updateBlockStateBasedOnMob(Mob mob, BlockState state, Level world, BlockPos pos) {
-//        if(mob.getType().getTags().toList().contains(LARGE_WORKER_TAG)) {
-//            world.setBlock(pos, state.setValue(HAS_WORKER, true).setValue(WORKER_LARGE_STATE, true), 3);
-//        }
-//        else if(mob.getType().getTags().toList().contains(MEDIUM_WORKER_TAG)) {
-//            world.setBlock(pos, state.setValue(HAS_WORKER, true).setValue(WORKER_MEDIUM_STATE, true), 3);
-//        }
-//        else if(mob.getType().getTags().toList().contains(SMALL_WORKER_TAG)) {
-//            world.setBlock(pos, state.setValue(HAS_WORKER, true).setValue(WORKER_SMALL_STATE, true), 3);
-//        }
-//    }
+    private InteractionResult killLeashEntity(Level level, BlockPos pos){
+        level.getEntitiesOfClass(LeashFenceKnotEntity.class, new AABB(pos).inflate(0.2D))
+                .forEach(Entity::kill);
+//        LOGGER.debug("Leash knot killed!");
+        return InteractionResult.SUCCESS;
+    }
+
+    private ResourceLocation getMobType(List<Mob> mobsNearPlayer, Player player){
+        Stream<Mob> mobsAttachedToPlayer = mobsNearPlayer.stream()
+                .filter(mob -> mob.isLeashed() &&  mob.getLeashHolder() == player);
+        Mob mob = mobsAttachedToPlayer.toList().get(0);
+        ResourceLocation mobType = ForgeRegistries.ENTITY_TYPES.getKey(mob.getType());
+//        LOGGER.debug("Mob type is " + mobType);
+        return mobType;
+    }
+
+    private boolean verifyMobIsInConfig(ResourceLocation mobType, Level level, BlockPos pos, BlockState state){
+//        LOGGER.debug("Verifying " + mobType);
+        boolean valid = false, small = false, medium = false, large = false;
+
+        if (Config.small_mobs.contains(mobType)){
+            small = true;
+            valid = true;
+        }
+        else if (Config.medium_mobs.contains(mobType)) {
+            medium = true;
+            valid = true;
+        }
+        else if (Config.large_mobs.contains(mobType)){
+            large = true;
+            valid = true;
+        }
+        level.setBlock(pos, state.setValue(HAS_WORKER, valid).setValue(SMALL_WORKER_STATE, small).setValue(MEDIUM_WORKER_STATE, medium).setValue(LARGE_WORKER_STATE, large), 3);
+        return small || medium || large;
+    }
 }

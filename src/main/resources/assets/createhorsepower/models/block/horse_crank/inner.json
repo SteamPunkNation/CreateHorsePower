@@ -1,11 +1,11 @@
 {
 	"credit": "Made with Blockbench",
 	"textures": {
-		"4": "createhorsepower:block/oak_planks",
-		"5": "createhorsepower:block/millstone",
-		"7": "createhorsepower:block/axis",
-		"8": "createhorsepower:block/axis_top",
-		"particle": "createhorsepower:block/polished_andesite"
+		"4": "minecraft:block/oak_planks",
+		"5": "create:block/millstone",
+		"7": "create:block/axis",
+		"8": "create:block/axis_top",
+		"particle": "minecraft:block/polished_andesite"
 	},
 	"elements": [
 		{

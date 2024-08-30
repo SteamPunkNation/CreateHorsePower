@@ -10,40 +10,39 @@ import com.simibubi.create.foundation.render.SuperByteBuffer;
 import net.minecraft.client.renderer.LevelRenderer;
 import net.minecraft.client.renderer.MultiBufferSource;
 import net.minecraft.client.renderer.RenderType;
-import net.minecraft.client.renderer.blockentity.BlockEntityRendererProvider.Context;
+import net.minecraft.client.renderer.blockentity.BlockEntityRendererProvider;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
-import net.minecraft.core.Direction.Axis;
+import net.minecraft.world.level.block.entity.BlockEntity;
 import net.minecraft.world.level.block.state.BlockState;
 import net.steampn.createhorsepower.utils.CHPBlockPartials;
 
-public class HorseCrankRenderer extends KineticBlockEntityRenderer {
-    public HorseCrankRenderer(Context dispatcher) {
-        super(dispatcher);
+public class HorseCrankRender extends KineticBlockEntityRenderer {
+    public HorseCrankRender(BlockEntityRendererProvider.Context context) {
+        super(context);
     }
 
     @Override
-    protected BlockState getRenderedBlockState(KineticBlockEntity te) {
-        return shaft(getRotationAxisOf(te));
+    protected BlockState getRenderedBlockState(KineticBlockEntity be) {
+        return shaft(getRotationAxisOf(be));
     }
 
     @Override
-    protected void renderSafe(KineticBlockEntity te, float partialTicks, PoseStack ps, MultiBufferSource buffer, int light, int overlay) {
-        super.renderSafe(te, partialTicks, ps, buffer, light, overlay);
+    protected void renderSafe(KineticBlockEntity be, float partialTicks, PoseStack ms, MultiBufferSource buffer, int light, int overlay) {
 
-        if(Backend.canUseInstancing(te.getLevel())) return;
-        BlockState state = te.getBlockState();
-        BlockPos pos = te.getBlockPos();
+        if(Backend.canUseInstancing(be.getLevel())) return;
+        BlockState state = be.getBlockState();
+        BlockPos pos = be.getBlockPos();
 
         VertexConsumer vc = buffer.getBuffer(RenderType.cutout());
 
-        int packedLightmapCoords = LevelRenderer.getLightColor(te.getLevel(), pos);
+        int packedLightmapCoords = LevelRenderer.getLightColor(be.getLevel(), pos);
 
         SuperByteBuffer crankCog = CachedBufferer.partial(CHPBlockPartials.HORSE_CRANK_COG, state);
-        Axis axis = getRotationAxisOf(te);
+        Direction.Axis axis = getRotationAxisOf(be);
         crankCog
                 .rotateCentered(Direction.UP, axis == Direction.Axis.X ? 0 : 90 * (float) Math.PI / 180f)
                 .light(packedLightmapCoords)
-                .renderInto(ps, vc);
+                .renderInto(ms, vc);
     }
 }

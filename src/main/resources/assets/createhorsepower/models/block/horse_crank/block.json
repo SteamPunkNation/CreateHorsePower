@@ -1,10 +1,10 @@
 {
 	"credit": "Made with Blockbench",
 	"textures": {
-		"0": "createhorsepower:block/gearbox",
-		"5": "createhorsepower:block/millstone",
-		"6": "createhorsepower:block/polished_andesite",
-		"particle": "createhorsepower:block/polished_andesite"
+		"0": "create:block/gearbox",
+		"5": "create:block/millstone",
+		"6": "minecraft:block/polished_andesite",
+		"particle": "minecraft:block/polished_andesite"
 	},
 	"elements": [
 		{

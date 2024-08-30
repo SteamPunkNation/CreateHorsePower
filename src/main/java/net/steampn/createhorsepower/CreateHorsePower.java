@@ -2,81 +2,80 @@ package net.steampn.createhorsepower;
 
 import com.mojang.logging.LogUtils;
 import com.simibubi.create.foundation.data.CreateRegistrate;
-import net.minecraft.client.Minecraft;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraftforge.api.distmarker.Dist;
 import net.minecraftforge.common.MinecraftForge;
 import net.minecraftforge.event.server.ServerStartingEvent;
 import net.minecraftforge.eventbus.api.IEventBus;
 import net.minecraftforge.eventbus.api.SubscribeEvent;
-import net.minecraftforge.fml.DistExecutor;
+import net.minecraftforge.fml.ModLoadingContext;
 import net.minecraftforge.fml.common.Mod;
+import net.minecraftforge.fml.config.ModConfig;
 import net.minecraftforge.fml.event.lifecycle.FMLClientSetupEvent;
 import net.minecraftforge.fml.event.lifecycle.FMLCommonSetupEvent;
 import net.minecraftforge.fml.javafmlmod.FMLJavaModLoadingContext;
-import net.minecraftforge.fml.loading.FMLPaths;
 import net.steampn.createhorsepower.config.Config;
-import net.steampn.createhorsepower.utils.BlockRegister;
+import net.steampn.createhorsepower.registry.BlockRegister;
+import net.steampn.createhorsepower.registry.TileEntityRegister;
 import net.steampn.createhorsepower.utils.CHPBlockPartials;
-import net.steampn.createhorsepower.utils.EntityRegister;
-import net.steampn.createhorsepower.utils.TileEntityRegister;
 import org.slf4j.Logger;
 
-@Mod(CreateHorsePower.MODID)
-public class CreateHorsePower
-{
-    public static final String MODID = "createhorsepower";
 
-    public static final CreateRegistrate CREATEREGISTRATE = CreateRegistrate.create(MODID);
+@Mod(CreateHorsePower.MODID)
+public class CreateHorsePower {
 
     private static final Logger LOGGER = LogUtils.getLogger();
-    public CreateHorsePower()
-    {
+    public static final String MODID = "createhorsepower";
+    public static final CreateRegistrate CREATE_REGISTRATE = CreateRegistrate.create(MODID);
+
+    public CreateHorsePower(){
         IEventBus modEventBus = FMLJavaModLoadingContext.get().getModEventBus();
 
-        Config.registerConfig(Config.COMMON_CONFIG, FMLPaths.CONFIGDIR.get().resolve("createhorsepower-common.toml"));
+        CREATE_REGISTRATE.registerEventListeners(modEventBus);
 
-        CREATEREGISTRATE.registerEventListeners(modEventBus);
         BlockRegister.register();
         TileEntityRegister.register();
-        EntityRegister.ENTITIES.register(modEventBus);
-
         modEventBus.addListener(this::commonSetup);
 
-        DistExecutor.safeRunWhenOn(Dist.CLIENT, () -> CHPBlockPartials::load);
+        ModLoadingContext.get().registerConfig(ModConfig.Type.SERVER, Config.SPEC);
 
-        // Register ourselves for server and other game events we are interested in
         MinecraftForge.EVENT_BUS.register(this);
     }
 
-    private void commonSetup(final FMLCommonSetupEvent event)
-    {
-        // Some common setup code
-        LOGGER.info("Loading CreateHorsePower Blocks, Items, Etc.");
+    private void commonSetup(final FMLCommonSetupEvent event){
+        LOGGER.debug("{} is registered!", BlockRegister.HORSE_CRANK.get());
     }
 
-    // You can use SubscribeEvent and let the Event Bus discover methods to call
     @SubscribeEvent
-    public void onServerStarting(ServerStartingEvent event)
-    {
-        // Do something when the server starts
-        LOGGER.info("HELLO from server starting");
+    public void serverSetup(final ServerStartingEvent event){
+        configFileDebug();
     }
 
-    // You can use EventBusSubscriber to automatically register all static methods in the class annotated with @SubscribeEvent
-    @Mod.EventBusSubscriber(modid = MODID, bus = Mod.EventBusSubscriber.Bus.MOD, value = Dist.CLIENT)
-    public static class ClientModEvents
-    {
-        @SubscribeEvent
-        public static void onClientSetup(FMLClientSetupEvent event)
-        {
-            // Some client setup code
-            LOGGER.info("HELLO FROM CLIENT SETUP");
-            LOGGER.info("MINECRAFT NAME >> {}", Minecraft.getInstance().getUser().getName());
-        }
+    private void configFileDebug(){
+        LOGGER.info("Base RPM for all creatures is {}", Config.base_creature_rpm);
+        LOGGER.info("Stress for Small is {}", Config.small_creature_stress);
+        LOGGER.info("Stress for Medium is {}", Config.medium_creature_stress);
+        LOGGER.info("Stress for Large is {}", Config.large_creature_stress);
+
+        Config.small_mobs.forEach((mob) -> LOGGER.info("Selected Small mob: {}", mob));
+        Config.medium_mobs.forEach((mob) -> LOGGER.info("Selected Medium mob: {}", mob));
+        Config.large_mobs.forEach((mob) -> LOGGER.info("Selected Large mob: {}", mob));
+
+        Config.poor_path.forEach((block) -> LOGGER.info("Selected Poor Path Block: {}", block));
+        Config.normal_path.forEach((block) -> LOGGER.info("Selected Normal Path Block: {}", block));
+        Config.great_path.forEach((block) -> LOGGER.info("Selected Great Path Block: {}", block));
     }
 
     public static ResourceLocation asResource(String path){
         return new ResourceLocation(MODID, path);
+    }
+
+    @Mod.EventBusSubscriber(modid = MODID, bus = Mod.EventBusSubscriber.Bus.MOD, value = Dist.CLIENT)
+    public static class ClientModEvents{
+
+        @SubscribeEvent
+        public static void onClientSetup(FMLClientSetupEvent event){
+            CHPBlockPartials.load();
+        }
     }
 }
