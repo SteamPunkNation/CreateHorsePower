@@ -2,7 +2,9 @@ package net.steampn.createhorsepower;
 
 import com.mojang.logging.LogUtils;
 import com.simibubi.create.foundation.data.CreateRegistrate;
+import net.minecraft.resources.ResourceKey;
 import net.minecraft.resources.ResourceLocation;
+import net.minecraft.world.item.CreativeModeTab;
 import net.minecraftforge.api.distmarker.Dist;
 import net.minecraftforge.common.MinecraftForge;
 import net.minecraftforge.event.server.ServerStartingEvent;
@@ -16,6 +18,7 @@ import net.minecraftforge.fml.event.lifecycle.FMLCommonSetupEvent;
 import net.minecraftforge.fml.javafmlmod.FMLJavaModLoadingContext;
 import net.steampn.createhorsepower.config.Config;
 import net.steampn.createhorsepower.registry.BlockRegister;
+import net.steampn.createhorsepower.registry.PonderRegistry;
 import net.steampn.createhorsepower.registry.TileEntityRegister;
 import net.steampn.createhorsepower.utils.CHPBlockPartials;
 import org.slf4j.Logger;
@@ -26,7 +29,8 @@ public class CreateHorsePower {
 
     private static final Logger LOGGER = LogUtils.getLogger();
     public static final String MODID = "createhorsepower";
-    public static final CreateRegistrate CREATE_REGISTRATE = CreateRegistrate.create(MODID);
+    public static final CreateRegistrate CREATE_REGISTRATE = CreateRegistrate.create(MODID)
+            .defaultCreativeTab((ResourceKey<CreativeModeTab>) null);
 
     public CreateHorsePower(){
         IEventBus modEventBus = FMLJavaModLoadingContext.get().getModEventBus();
@@ -76,6 +80,7 @@ public class CreateHorsePower {
         @SubscribeEvent
         public static void onClientSetup(FMLClientSetupEvent event){
             CHPBlockPartials.load();
+            PonderRegistry.register();
         }
     }
 }

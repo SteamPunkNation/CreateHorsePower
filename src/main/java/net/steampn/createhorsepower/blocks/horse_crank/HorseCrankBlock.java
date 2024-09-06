@@ -151,14 +151,13 @@ public class HorseCrankBlock extends KineticBlock implements ICogWheel, IBE<Hors
                 return InteractionResult.FAIL;
             }
             //Get what mob and verify its worker status, if not worker do nothing
-            if (!verifyMobIsInConfig(getMobType(mobsNearPlayer, player), level, pos, state)){
+            if (!verifyMobIsInConfig(getMobType(getMob(mobsNearPlayer, player)), level, pos, state)){
                 player.displayClientMessage(Component.translatable("tooltip.createhorsepower.horse_crank.notValidWorker"), true);
                 return InteractionResult.FAIL;
             }
 
             LeadItem.bindPlayerMobs(player, level, pos);
             player.displayClientMessage(Component.translatable("tooltip.createhorsepower.horse_crank.attached"), true);
-            LOGGER.debug("Stress for small is " + Config.small_creature_stress);
             return InteractionResult.sidedSuccess(level.isClientSide);
         }
 
@@ -169,21 +168,20 @@ public class HorseCrankBlock extends KineticBlock implements ICogWheel, IBE<Hors
     private InteractionResult killLeashEntity(Level level, BlockPos pos){
         level.getEntitiesOfClass(LeashFenceKnotEntity.class, new AABB(pos).inflate(0.2D))
                 .forEach(Entity::kill);
-//        LOGGER.debug("Leash knot killed!");
         return InteractionResult.SUCCESS;
     }
 
-    private ResourceLocation getMobType(List<Mob> mobsNearPlayer, Player player){
+    private Mob getMob(List<Mob> mobsNearPlayer, Player player){
         Stream<Mob> mobsAttachedToPlayer = mobsNearPlayer.stream()
                 .filter(mob -> mob.isLeashed() &&  mob.getLeashHolder() == player);
-        Mob mob = mobsAttachedToPlayer.toList().get(0);
-        ResourceLocation mobType = ForgeRegistries.ENTITY_TYPES.getKey(mob.getType());
-//        LOGGER.debug("Mob type is " + mobType);
-        return mobType;
+        return mobsAttachedToPlayer.toList().get(0);
+    }
+
+    private ResourceLocation getMobType(Mob mob){
+        return ForgeRegistries.ENTITY_TYPES.getKey(mob.getType());
     }
 
     private boolean verifyMobIsInConfig(ResourceLocation mobType, Level level, BlockPos pos, BlockState state){
-//        LOGGER.debug("Verifying " + mobType);
         boolean valid = false, small = false, medium = false, large = false;
 
         if (Config.small_mobs.contains(mobType)){

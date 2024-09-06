@@ -7,8 +7,10 @@ import com.simibubi.create.content.kinetics.base.SingleRotatingInstance;
 import com.simibubi.create.content.kinetics.base.flwdata.RotatingData;
 import net.steampn.createhorsepower.utils.CHPBlockPartials;
 
-public class HorseCrankCogInstance extends SingleRotatingInstance {
-    public HorseCrankCogInstance(MaterialManager materialManager, KineticBlockEntity blockEntity) {
+public class HorseCrankCogInstance extends SingleRotatingInstance<HorseCrankTileEntity> {
+
+
+    public HorseCrankCogInstance(MaterialManager materialManager, HorseCrankTileEntity blockEntity) {
         super(materialManager, blockEntity);
     }
 
