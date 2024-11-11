@@ -23,3 +23,9 @@ run
 
 # Files from Forge MDK
 forge*changelog.txt
+
+# Files from build
+run
+run-data
+test
+.DS_Store

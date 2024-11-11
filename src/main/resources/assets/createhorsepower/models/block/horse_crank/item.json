@@ -2,13 +2,13 @@
 	"credit": "Made with Blockbench",
 	"parent": "block/block",
 	"textures": {
-		"0": "createhorsepower:block/gearbox",
-		"4": "createhorsepower:block/oak_planks",
-		"5": "createhorsepower:block/millstone",
-		"6": "createhorsepower:block/polished_andesite",
-		"7": "createhorsepower:block/axis",
-		"8": "createhorsepower:block/axis_top",
-		"particle": "createhorsepower:block/polished_andesite"
+		"0": "create:block/gearbox",
+		"4": "minecraft:block/oak_planks",
+		"5": "create:block/millstone",
+		"6": "minecraft:block/polished_andesite",
+		"7": "create:block/axis",
+		"8": "create:block/axis_top",
+		"particle": "minecraft:block/polished_andesite"
 	},
 	"elements": [
 		{

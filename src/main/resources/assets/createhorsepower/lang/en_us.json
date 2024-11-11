@@ -1,4 +1,16 @@
 {
   "block.createhorsepower.horse_crank": "Horse Crank",
-  "item.createhorsepower.horse_crank": "Horse Crank"
+  "item.createhorsepower.horse_crank": "Horse Crank",
+  "entity.createhorsepower.chp_leash_knot": "(CHP) Leash Knot",
+  "tooltip.createhorsepower.horse_crank.detached" : "Worker has been detached",
+  "tooltip.createhorsepower.horse_crank.attached" : "Worker has been attached",
+  "tooltip.createhorsepower.horse_crank.maximumMobs" : "Only 1 mob can be attached",
+  "tooltip.createhorsepower.horse_crank.notValidWorker": "Mob is not a valid worker",
+  "tooltip.createhorsepower.horse_crank.alreadyHasWorker": "Crank already has a worker",
+  "createhorsepower.ponder.horse_crank.header": "Using Horse Crank",
+  "createhorsepower.ponder.horse_crank.text_1": "This is a Horse Crank",
+  "createhorsepower.ponder.horse_crank.text_2": "To use a horse crank you first need to have valid blocks underneath it",
+  "createhorsepower.ponder.horse_crank.text_3": "Valid blocks are listed in the config",
+  "createhorsepower.ponder.horse_crank.text_4": "When a valid worker is attached the crank will produce stress",
+  "createhorsepower.ponder.horse_crank.text_5": "You can attach a any mob in the config to turn it into a worker"
 }
