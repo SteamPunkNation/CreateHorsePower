@@ -1,6 +1,6 @@
 package net.steampn.createhorsepower.utils;
 
-import com.jozufozu.flywheel.core.PartialModel;
+import dev.engine_room.flywheel.lib.model.baked.PartialModel;
 import net.steampn.createhorsepower.CreateHorsePower;
 
 public class CHPBlockPartials {
@@ -8,7 +8,7 @@ public class CHPBlockPartials {
     public static PartialModel HORSE_CRANK_BASE = get("horse_crank/block");
 
     public static PartialModel get(String path){
-        return new PartialModel(CreateHorsePower.asResource("block/" + path));
+        return PartialModel.of(CreateHorsePower.asResource("block/" + path));
     }
 
 

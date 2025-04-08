@@ -1,7 +1,7 @@
 package net.steampn.createhorsepower.datagen;
 
 import com.simibubi.create.AllBlocks;
-import com.simibubi.create.content.kinetics.simpleRelays.CogWheelBlock;
+import java.util.function.Consumer;
 import net.minecraft.data.PackOutput;
 import net.minecraft.data.recipes.FinishedRecipe;
 import net.minecraft.data.recipes.RecipeCategory;
@@ -10,8 +10,6 @@ import net.minecraft.data.recipes.ShapedRecipeBuilder;
 import net.minecraft.world.level.block.Blocks;
 import net.minecraftforge.common.crafting.conditions.IConditionBuilder;
 import net.steampn.createhorsepower.registry.BlockRegister;
-
-import java.util.function.Consumer;
 
 public class CHPRecipeProvider extends RecipeProvider implements IConditionBuilder {
     public CHPRecipeProvider(PackOutput packOutput){

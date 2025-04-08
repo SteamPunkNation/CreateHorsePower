@@ -1,21 +1,16 @@
 package net.steampn.createhorsepower.blocks.horse_crank;
 
-import com.jozufozu.flywheel.api.Instancer;
-import com.jozufozu.flywheel.api.MaterialManager;
-import com.simibubi.create.content.kinetics.base.KineticBlockEntity;
-import com.simibubi.create.content.kinetics.base.SingleRotatingInstance;
-import com.simibubi.create.content.kinetics.base.flwdata.RotatingData;
+import com.simibubi.create.content.kinetics.base.SingleAxisRotatingVisual;
+import dev.engine_room.flywheel.api.visualization.VisualizationContext;
+import dev.engine_room.flywheel.lib.model.Models;
 import net.steampn.createhorsepower.utils.CHPBlockPartials;
 
-public class HorseCrankCogInstance extends SingleRotatingInstance<HorseCrankTileEntity> {
+public class HorseCrankCogInstance extends SingleAxisRotatingVisual<HorseCrankTileEntity> {
 
 
-    public HorseCrankCogInstance(MaterialManager materialManager, HorseCrankTileEntity blockEntity) {
-        super(materialManager, blockEntity);
-    }
-
-    @Override
-    protected Instancer<RotatingData> getModel() {
-        return this.getRotatingMaterial().getModel(CHPBlockPartials.HORSE_CRANK_COG, this.getRenderedBlockState());
+    public HorseCrankCogInstance(
+        VisualizationContext context,
+        HorseCrankTileEntity blockEntity, float partialTick) {
+        super(context, blockEntity, partialTick, Models.partial(CHPBlockPartials.HORSE_CRANK_COG));
     }
 }
