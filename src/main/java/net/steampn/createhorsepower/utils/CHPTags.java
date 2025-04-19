@@ -1,11 +1,11 @@
 package net.steampn.createhorsepower.utils;
 
+import static net.steampn.createhorsepower.CreateHorsePower.MODID;
+
 import net.minecraft.core.registries.Registries;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.tags.TagKey;
 import net.minecraft.world.entity.EntityType;
-
-import static net.steampn.createhorsepower.CreateHorsePower.MODID;
 
 public class CHPTags {
     public static class Entities {

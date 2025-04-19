@@ -1,6 +1,11 @@
 package net.steampn.createhorsepower.config;
 
+import static net.steampn.createhorsepower.CreateHorsePower.MODID;
+
 import com.mojang.logging.LogUtils;
+import java.util.List;
+import java.util.Set;
+import java.util.stream.Collectors;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.world.entity.EntityType;
 import net.minecraft.world.level.block.Block;
@@ -8,15 +13,11 @@ import net.minecraftforge.common.ForgeConfigSpec;
 import net.minecraftforge.eventbus.api.SubscribeEvent;
 import net.minecraftforge.fml.common.Mod;
 import net.minecraftforge.fml.event.config.ModConfigEvent;
+import net.minecraftforge.registries.DeferredRegister;
 import net.minecraftforge.registries.ForgeRegistries;
+import net.steampn.createhorsepower.utils.CHPTags;
+import net.steampn.createhorsepower.utils.CHPTags.Entities;
 import org.slf4j.Logger;
-
-import java.util.List;
-import java.util.Objects;
-import java.util.Set;
-import java.util.stream.Collectors;
-
-import static net.steampn.createhorsepower.CreateHorsePower.MODID;
 
 @Mod.EventBusSubscriber(modid = MODID, bus = Mod.EventBusSubscriber.Bus.MOD)
 public class Config {

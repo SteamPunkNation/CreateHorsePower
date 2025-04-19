@@ -10,7 +10,7 @@ public class TileEntityRegister {
 
     public static final BlockEntityEntry<HorseCrankTileEntity> HORSE_CRANK = CreateHorsePower.CREATE_REGISTRATE
             .blockEntity("horse_crank", HorseCrankTileEntity::new)
-            .instance(() -> HorseCrankCogInstance::new)
+            .visual(() -> HorseCrankCogInstance::new, false)
             .validBlock(BlockRegister.HORSE_CRANK)
             .renderer(() -> HorseCrankRender::new)
             .register();
