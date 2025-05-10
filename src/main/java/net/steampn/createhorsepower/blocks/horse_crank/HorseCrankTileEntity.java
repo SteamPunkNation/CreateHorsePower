@@ -42,6 +42,7 @@ public class HorseCrankTileEntity extends GeneratingKineticBlockEntity {
   private PathfinderMob cachedWorkerMob;
   private long lastBlockUpdateTick = -1, lastWorkerUpdateTick = -1;
   private float lastGeneratedSpeed = 0;
+  public float generatedSpeed = 4;
   private float lastSpeed = 0;
 
   public HorseCrankTileEntity(BlockEntityType<?> type, BlockPos pos, BlockState state) {
@@ -63,51 +64,24 @@ public class HorseCrankTileEntity extends GeneratingKineticBlockEntity {
 
   @Override
   public float getGeneratedSpeed() {
-    float generatedSpeed;
-    BlockState state = getBlockState();
-
-    if (!BlockRegister.HORSE_CRANK.has(getBlockState())) {
-      return 0;
-    }
-
-    if (!state.getValue(HAS_WORKER)) {
-      return 0;
-    }
-
-    if (!hasValidWorkingBlocks) {
-      return 0;
-    }
-
-    generatedSpeed = 4 * rpmModifier;
-
-    return generatedSpeed;
+    return !this.getBlockState().getValue(HAS_WORKER) ? 0.0F : this.generatedSpeed * rpmModifier;
   }
 
   @Override
   public float calculateAddedStressCapacity() {
-    float capacity;
     BlockState state = getBlockState();
 
-    if (!BlockRegister.HORSE_CRANK.has(getBlockState())) {
-      return 0;
-    }
+    if (getGeneratedSpeed() == 0 || !state.getValue(HAS_WORKER)) return 0;
 
-    if (!state.getValue(HAS_WORKER)) {
-      return 0;
-    }
+    float capacity = 0;
+    if(state.getValue(SMALL_WORKER_STATE)) capacity = Config.small_creature_stress;
+    else if(state.getValue(MEDIUM_WORKER_STATE)) capacity = Config.medium_creature_stress;
+    else if(state.getValue(LARGE_WORKER_STATE)) capacity = Config.large_creature_stress;
 
-    if (state.getValue(SMALL_WORKER_STATE)) {
-      capacity = Config.small_creature_stress / getSpeed();
-    } else if (state.getValue(MEDIUM_WORKER_STATE)) {
-      capacity = Config.medium_creature_stress / getSpeed();
-    } else if (state.getValue(LARGE_WORKER_STATE)) {
-      capacity = Config.large_creature_stress / getSpeed();
-    } else {
-      capacity = 0;
-    }
+    capacity = Math.abs(capacity / Math.abs(getGeneratedSpeed()));
 
     this.lastCapacityProvided = capacity;
-    return Math.abs(capacity);
+    return capacity;
   }
 
   @Override
@@ -118,11 +92,15 @@ public class HorseCrankTileEntity extends GeneratingKineticBlockEntity {
   @Override
   protected void write(CompoundTag compound, boolean clientPacket) {
     super.write(compound, clientPacket);
+    compound.putFloat("RpmModifier", rpmModifier);
+    compound.putFloat("GeneratedSpeed", generatedSpeed);
   }
 
   @Override
   protected void read(CompoundTag compound, boolean clientPacket) {
     super.read(compound, clientPacket);
+    if (compound.contains("RpmModifier")) rpmModifier = compound.getFloat("RpmModifier");
+    if (compound.contains("GeneratedSpeed")) generatedSpeed = compound.getFloat("GeneratedSpeed");
   }
 
   @Override

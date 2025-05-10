@@ -131,7 +131,7 @@ public class HorseCrankBlock extends KineticBlock implements ICogWheel, IBE<Hors
             long leashKnots = level.getEntitiesOfClass(LeashFenceKnotEntity.class, new AABB(pos).inflate(0.2D)).size();
             if (leashKnots > 0){
                 player.displayClientMessage(Component.translatable("tooltip.createhorsepower.horse_crank.alreadyHasWorker"), true);
-                return InteractionResult.FAIL;
+                return InteractionResult.PASS;
             }
 
             List<Mob> mobsNearPlayer = level.getEntitiesOfClass(Mob.class, new AABB(pos).inflate(7.0D));
@@ -142,7 +142,7 @@ public class HorseCrankBlock extends KineticBlock implements ICogWheel, IBE<Hors
             }
 
             //If num of mobs attached to player is > 1, do nothing
-            if (mobsNearPlayer.stream().filter(mob -> mob.isLeashed() &&  mob.getLeashHolder() == player).count() > 1){
+            if (mobsNearPlayer.stream().filter(mob -> mob.isLeashed() && mob.getLeashHolder() == player).count() > 1){
                 player.displayClientMessage(Component.translatable("tooltip.createhorsepower.horse_crank.maximumMobs"), true);
                 return InteractionResult.FAIL;
             }

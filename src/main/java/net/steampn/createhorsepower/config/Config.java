@@ -38,9 +38,9 @@ public class Config {
         BASE_CREATURE_RPM = COMMON_BUILDER.comment("Base rpm creatures can spin the horse crank.").defineInRange("creatureRPMRange", 16, 1, Integer.MAX_VALUE);
 
         //Creature Stress
-        SMALL_CREATURE_STRESS = COMMON_BUILDER.comment("How much stress small creatures can produce for the horse crank.").defineInRange("smallCreatureStressRange", 64, 1, Integer.MAX_VALUE);
-        MEDIUM_CREATURE_STRESS = COMMON_BUILDER.comment("How much stress medium creatures can produce for the horse crank.").defineInRange("mediumCreatureStressRange", 128, 1, Integer.MAX_VALUE);
-        LARGE_CREATURE_STRESS = COMMON_BUILDER.comment("How much stress large creatures can produce for the horse crank.").defineInRange("largeCreatureStressRange", 256, 1, Integer.MAX_VALUE);
+        SMALL_CREATURE_STRESS = COMMON_BUILDER.comment("How much stress small creatures can produce for the horse crank.").defineInRange("smallCreatureStressRange", 128, 1, Integer.MAX_VALUE);
+        MEDIUM_CREATURE_STRESS = COMMON_BUILDER.comment("How much stress medium creatures can produce for the horse crank.").defineInRange("mediumCreatureStressRange", 256, 1, Integer.MAX_VALUE);
+        LARGE_CREATURE_STRESS = COMMON_BUILDER.comment("How much stress large creatures can produce for the horse crank.").defineInRange("largeCreatureStressRange", 512, 1, Integer.MAX_VALUE);
 
         COMMON_BUILDER.pop();
 
