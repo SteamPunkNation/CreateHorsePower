@@ -2,6 +2,8 @@ package net.steampn.createhorsepower;
 
 import com.mojang.logging.LogUtils;
 import com.simibubi.create.foundation.data.CreateRegistrate;
+import java.util.function.Function;
+import net.createmod.ponder.foundation.PonderIndex;
 import net.minecraft.resources.ResourceKey;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.world.item.CreativeModeTab;
@@ -16,9 +18,9 @@ import net.minecraftforge.fml.config.ModConfig;
 import net.minecraftforge.fml.event.lifecycle.FMLClientSetupEvent;
 import net.minecraftforge.fml.event.lifecycle.FMLCommonSetupEvent;
 import net.minecraftforge.fml.javafmlmod.FMLJavaModLoadingContext;
+import net.steampn.createhorsepower.client.ponders.HorseCrankPonderPlugin;
 import net.steampn.createhorsepower.config.Config;
 import net.steampn.createhorsepower.registry.BlockRegister;
-import net.steampn.createhorsepower.registry.PonderRegistry;
 import net.steampn.createhorsepower.registry.TileEntityRegister;
 import net.steampn.createhorsepower.utils.CHPBlockPartials;
 import org.slf4j.Logger;
@@ -71,7 +73,7 @@ public class CreateHorsePower {
     }
 
     public static ResourceLocation asResource(String path){
-        return new ResourceLocation(MODID, path);
+        return ResourceLocation.fromNamespaceAndPath(MODID, path);
     }
 
     @Mod.EventBusSubscriber(modid = MODID, bus = Mod.EventBusSubscriber.Bus.MOD, value = Dist.CLIENT)
@@ -80,7 +82,7 @@ public class CreateHorsePower {
         @SubscribeEvent
         public static void onClientSetup(FMLClientSetupEvent event){
             CHPBlockPartials.load();
-            PonderRegistry.register();
+            PonderIndex.addPlugin(new HorseCrankPonderPlugin());
         }
     }
 }

@@ -1,6 +1,11 @@
 package net.steampn.createhorsepower.config;
 
+import static net.steampn.createhorsepower.CreateHorsePower.MODID;
+
 import com.mojang.logging.LogUtils;
+import java.util.List;
+import java.util.Set;
+import java.util.stream.Collectors;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.world.entity.EntityType;
 import net.minecraft.world.level.block.Block;
@@ -8,15 +13,11 @@ import net.minecraftforge.common.ForgeConfigSpec;
 import net.minecraftforge.eventbus.api.SubscribeEvent;
 import net.minecraftforge.fml.common.Mod;
 import net.minecraftforge.fml.event.config.ModConfigEvent;
+import net.minecraftforge.registries.DeferredRegister;
 import net.minecraftforge.registries.ForgeRegistries;
+import net.steampn.createhorsepower.utils.CHPTags;
+import net.steampn.createhorsepower.utils.CHPTags.Entities;
 import org.slf4j.Logger;
-
-import java.util.List;
-import java.util.Objects;
-import java.util.Set;
-import java.util.stream.Collectors;
-
-import static net.steampn.createhorsepower.CreateHorsePower.MODID;
 
 @Mod.EventBusSubscriber(modid = MODID, bus = Mod.EventBusSubscriber.Bus.MOD)
 public class Config {
@@ -37,9 +38,9 @@ public class Config {
         BASE_CREATURE_RPM = COMMON_BUILDER.comment("Base rpm creatures can spin the horse crank.").defineInRange("creatureRPMRange", 16, 1, Integer.MAX_VALUE);
 
         //Creature Stress
-        SMALL_CREATURE_STRESS = COMMON_BUILDER.comment("How much stress small creatures can produce for the horse crank.").defineInRange("smallCreatureStressRange", 64, 1, Integer.MAX_VALUE);
-        MEDIUM_CREATURE_STRESS = COMMON_BUILDER.comment("How much stress medium creatures can produce for the horse crank.").defineInRange("mediumCreatureStressRange", 128, 1, Integer.MAX_VALUE);
-        LARGE_CREATURE_STRESS = COMMON_BUILDER.comment("How much stress large creatures can produce for the horse crank.").defineInRange("largeCreatureStressRange", 256, 1, Integer.MAX_VALUE);
+        SMALL_CREATURE_STRESS = COMMON_BUILDER.comment("How much stress small creatures can produce for the horse crank.").defineInRange("smallCreatureStressRange", 128, 1, Integer.MAX_VALUE);
+        MEDIUM_CREATURE_STRESS = COMMON_BUILDER.comment("How much stress medium creatures can produce for the horse crank.").defineInRange("mediumCreatureStressRange", 256, 1, Integer.MAX_VALUE);
+        LARGE_CREATURE_STRESS = COMMON_BUILDER.comment("How much stress large creatures can produce for the horse crank.").defineInRange("largeCreatureStressRange", 512, 1, Integer.MAX_VALUE);
 
         COMMON_BUILDER.pop();
 

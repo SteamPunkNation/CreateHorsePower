@@ -1,6 +1,8 @@
 package net.steampn.createhorsepower.registry;
 
-import com.simibubi.create.AllTags;
+import static com.simibubi.create.foundation.data.ModelGen.customItemModel;
+import static com.simibubi.create.foundation.data.TagGen.pickaxeOnly;
+
 import com.simibubi.create.foundation.data.AssetLookup;
 import com.simibubi.create.foundation.data.CreateRegistrate;
 import com.simibubi.create.foundation.data.SharedProperties;
@@ -9,9 +11,6 @@ import net.minecraft.world.item.CreativeModeTabs;
 import net.minecraft.world.level.material.MapColor;
 import net.steampn.createhorsepower.CreateHorsePower;
 import net.steampn.createhorsepower.blocks.horse_crank.HorseCrankBlock;
-
-import static com.simibubi.create.foundation.data.ModelGen.customItemModel;
-import static com.simibubi.create.foundation.data.TagGen.pickaxeOnly;
 
 public class BlockRegister {
 
