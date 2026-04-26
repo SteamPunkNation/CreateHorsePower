@@ -21,10 +21,9 @@ public class CHPRecipeProvider extends RecipeProvider implements net.neoforged.n
     @Override
     protected void buildRecipes(RecipeOutput recipeOutput) {
         ShapedRecipeBuilder.shaped(RecipeCategory.MISC, BlockRegister.HORSE_CRANK.get())
-                .pattern("AFA")
-                .pattern("ACA")
+                .pattern(" F ")
+                .pattern(" C ")
                 .pattern("SSS")
-                .define('A', Blocks.AIR)
                 .define('F', Blocks.OAK_FENCE)
                 .define('C', AllBlocks.COGWHEEL.get())
                 .define('S', Blocks.STONE)
