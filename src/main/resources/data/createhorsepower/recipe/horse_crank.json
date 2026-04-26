@@ -1,23 +1,25 @@
 {
   "type": "minecraft:crafting_shaped",
-  "key": {
-    "C": {
-      "item": "create:cogwheel"
-    },
-    "F": {
-      "item": "minecraft:oak_fence"
-    },
-    "S": {
-      "item": "minecraft:stone"
-    }
-  },
+  "category": "misc",
   "pattern": [
     " F ",
     " C ",
     "SSS"
   ],
+  "key": {
+    "F": {
+      "item": "minecraft:oak_fence"
+    },
+    "C": {
+      "item": "create:cogwheel"
+    },
+    "S": {
+      "item": "minecraft:stone"
+    }
+  },
   "result": {
-    "item": "createhorsepower:horse_crank"
+    "count": 1,
+    "id": "createhorsepower:horse_crank"
   },
   "show_notification": true
 }
