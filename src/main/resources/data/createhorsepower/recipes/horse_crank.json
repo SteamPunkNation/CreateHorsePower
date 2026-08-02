@@ -1,5 +1,6 @@
 {
   "type": "minecraft:crafting_shaped",
+  "category": "misc",
   "key": {
     "C": {
       "item": "create:cogwheel"
@@ -17,7 +18,8 @@
     "SSS"
   ],
   "result": {
-    "item": "createhorsepower:horse_crank"
+    "count": 1,
+    "id": "createhorsepower:horse_crank"
   },
   "show_notification": true
 }
